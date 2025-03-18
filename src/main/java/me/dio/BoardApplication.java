@@ -1,6 +1,7 @@
 package me.dio;
 
 import me.dio.persistence.migration.MigrationStrategy;
+import me.dio.ui.MainMenu;
 
 import java.sql.SQLException;
 
@@ -14,6 +15,7 @@ public class BoardApplication {
 			new MigrationStrategy(connection).executeMigration();
 		}
 
+		new MainMenu().excecute();
 	}
 
 }
