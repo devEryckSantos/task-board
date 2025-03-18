@@ -5,8 +5,8 @@ import me.dio.persistence.entity.BoardColumnEntity;
 import me.dio.persistence.entity.BoardEntity;
 import me.dio.service.BoardColumnQueryService;
 import me.dio.service.BoardQueryService;
+import me.dio.service.CardQueryService;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Scanner;
 
@@ -22,7 +22,7 @@ public class BoardMenu {
     public void execute() {
         try {
 
-            System.out.printf("Bem vindo ao board $s, selecione a operação desejada:", entity.getId());
+            System.out.printf("Bem vindo ao board %s, selecione a operação desejada:", entity.getId());
             var option = -1;
             while (option != 9) {
                 System.out.println("1 - Criar um card.");
@@ -103,6 +103,20 @@ public class BoardMenu {
         }
     }
 
-    private void showCard() {
+    private void showCard() throws SQLException{
+        System.out.println("Informe o id do card que deseja visualizar.");
+        var selectedCardId = scanner.nextLong();
+        try(var connection = getConnection()) {
+            new CardQueryService(connection).findById(selectedCardId)
+                    .ifPresentOrElse(c-> {
+                        System.out.printf("Card %s - %s.\n", c.id(), c.title());
+                        System.out.printf("Descrição: %s\n", c.description());
+                        System.out.printf(c.blocked() ? "Está bloqueado. Motivo:" + c.blockedReason() : "Não está bloqueado.");
+                        System.out.printf("Já foi bloqueado %s vezes", c.blocksAmount());
+                        System.out.printf("Está no momento na coluna %s - %s\n", c.columnId(), c.columnName());
+                            },
+                            () -> System.out.printf("Não existe um card com o id %s\n", selectedCardId));
+
+        }
     }
 }
