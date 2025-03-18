@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.Objects.isNull;
 import static me.dio.persistence.entity.BoardColumnKindEnum.findByName;
 
 @AllArgsConstructor
@@ -60,7 +61,7 @@ public class BoardColumnDAO {
                 SELECT bc.id,
                         bc.name,
                         bc.kind,
-                        COUNT(SELECT c.id
+                        (SELECT COUNT(c.id)
                                 FROM CARDS c
                               WHERE c.board_column_id = bc.id) cards_amount
                     FROM BOARDS_COLUMNS bc
@@ -84,15 +85,16 @@ public class BoardColumnDAO {
         }
     }
     public Optional<BoardColumnEntity> findById(final Long boardId) throws SQLException{
-        var sql = """
+        var sql =
+                """
                 SELECT bc.name,
-                       bc.kind
+                       bc.kind,
                        c.id,
-                       c.tittle,
+                       c.title,
                        c.description
                     FROM BOARDS_COLUMNS bc
-                  INNER JOIN CARDS c
-                  ON c.board_column_id = bc.id
+                  LEFT JOIN CARDS c
+                     ON c.board_column_id = bc.id
                   WHERE bc.id = ?
                 """;
         try(var statement = connection.prepareStatement(sql)) {
@@ -104,12 +106,16 @@ public class BoardColumnDAO {
                 entity.setName(resultSet.getString("bc.name"));
                 entity.setKind(findByName(resultSet.getString("bc.kind")));
                 do {
+                    if (isNull(resultSet.getString("c.title"))){
+                        break;
+                    }
                     var card = new CardEntity();
                     card.setId(resultSet.getLong("c.id"));
                     card.setTittle(resultSet.getString("c.title"));
                     card.setDescription(resultSet.getString("c.description"));
                     entity.getCards().add(card);
                 } while (resultSet.next());
+                return Optional.of(entity);
             }
             return Optional.empty();
         }

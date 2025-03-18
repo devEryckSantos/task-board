@@ -3,9 +3,11 @@ package me.dio.ui;
 import lombok.AllArgsConstructor;
 import me.dio.persistence.entity.BoardColumnEntity;
 import me.dio.persistence.entity.BoardEntity;
+import me.dio.persistence.entity.CardEntity;
 import me.dio.service.BoardColumnQueryService;
 import me.dio.service.BoardQueryService;
 import me.dio.service.CardQueryService;
+import me.dio.service.CardService;
 
 import java.sql.SQLException;
 import java.util.Scanner;
@@ -22,7 +24,7 @@ public class BoardMenu {
     public void execute() {
         try {
 
-            System.out.printf("Bem vindo ao board %s, selecione a operação desejada:", entity.getId());
+            System.out.printf("Bem vindo ao board %s, selecione a operação desejada:\n", entity.getId());
             var option = -1;
             while (option != 9) {
                 System.out.println("1 - Criar um card.");
@@ -57,7 +59,16 @@ public class BoardMenu {
         }
     }
 
-    private void createCard() {
+    private void createCard() throws SQLException{
+        var card = new CardEntity();
+        System.out.println("Inforome o título do card");
+        card.setTittle(scanner.next());
+        System.out.println("Inforome a descrição do card");
+        card.setDescription(scanner.next());
+        card.setBoardColumn(entity.getInitialColumn());
+        try (var connection = getConnection()){
+            new CardService(connection).insert(card);
+        }
     }
 
     private void moveCardToNextColumn() {
@@ -96,7 +107,7 @@ public class BoardMenu {
             var column = new BoardColumnQueryService(connection).findById(selectedColumn);
             column.ifPresent(co -> {
                 System.out.printf("Coluna %s tipo %s\n", co.getName(), co.getKind());
-                co.getCards().forEach(ca -> System.out.printf("Card %s - %s\nDescrição: %s",
+                co.getCards().forEach(ca -> System.out.printf("Card %s - %s\nDescrição: %s\n",
                         ca.getId(), ca.getTittle(), ca.getDescription()));
             });
 
@@ -111,8 +122,8 @@ public class BoardMenu {
                     .ifPresentOrElse(c-> {
                         System.out.printf("Card %s - %s.\n", c.id(), c.title());
                         System.out.printf("Descrição: %s\n", c.description());
-                        System.out.printf(c.blocked() ? "Está bloqueado. Motivo:" + c.blockedReason() : "Não está bloqueado.");
-                        System.out.printf("Já foi bloqueado %s vezes", c.blocksAmount());
+                        System.out.println(c.blocked() ? "Está bloqueado. Motivo:" + c.blockedReason() : "Não está bloqueado.");
+                        System.out.printf("Já foi bloqueado %s vezes\n", c.blocksAmount());
                         System.out.printf("Está no momento na coluna %s - %s\n", c.columnId(), c.columnName());
                             },
                             () -> System.out.printf("Não existe um card com o id %s\n", selectedCardId));

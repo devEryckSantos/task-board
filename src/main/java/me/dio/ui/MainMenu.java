@@ -25,13 +25,13 @@ public class MainMenu {
             System.out.println("1 - Criar um novo board.");
             System.out.println("2 - Selecionar um board existente.");
             System.out.println("3 - Excluir um board.");
-            System.out.println("4 - Sair.");
+            System.out.println("0 - Sair.");
             option = scanner.nextInt();
             switch (option) {
                 case 1 -> createBoard();
                 case 2 -> selectBoard();
                 case 3 -> deleteBoard();
-                case 4 -> System.exit(0);
+                case 0 -> System.exit(0);
                 default -> System.out.println("OPÇÃO INVÁLIDA! Escolha uma opção do menu.");
 
             }
