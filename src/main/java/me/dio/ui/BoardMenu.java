@@ -1,6 +1,7 @@
 package me.dio.ui;
 
 import lombok.AllArgsConstructor;
+import me.dio.dto.BoardColumnInfoDTO;
 import me.dio.persistence.entity.BoardColumnEntity;
 import me.dio.persistence.entity.BoardEntity;
 import me.dio.persistence.entity.CardEntity;
@@ -67,11 +68,21 @@ public class BoardMenu {
         card.setDescription(scanner.next());
         card.setBoardColumn(entity.getInitialColumn());
         try (var connection = getConnection()){
-            new CardService(connection).insert(card);
+            new CardService(connection).create(card);
         }
     }
 
-    private void moveCardToNextColumn() {
+    private void moveCardToNextColumn() throws SQLException{
+        System.out.println("Informe o id do card que deseja mover para a próxima coluna.");
+        var cardId = scanner.nextLong();
+        var boardColumnsIndo = entity.getBoardColumns().stream()
+                .map(bc -> new BoardColumnInfoDTO(bc.getId(), bc.getOrder(), bc.getKind()))
+                .toList();
+        try(var connection = getConnection()){
+            new CardService(connection).moveToNextColumn(cardId, boardColumnsIndo);
+        } catch (RuntimeException ex){
+            System.out.println(ex.getMessage());
+        }
     }
 
     private void blockCard() {
