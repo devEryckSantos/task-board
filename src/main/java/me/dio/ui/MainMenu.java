@@ -35,7 +35,6 @@ public class MainMenu {
                 default -> System.out.println("OPÇÃO INVÁLIDA! Escolha uma opção do menu.");
 
             }
-
         }
     }
 
